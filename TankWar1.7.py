@@ -3,17 +3,19 @@ New Function: init enemy tanks and display them
 Reference: www.pygame.org
 '''
 
-import pygame, time
+import pygame, time, random
 
 SCREEN_WIDTH = 700
 SCREEN_HEIGHT = 500
 BGCOLOR = pygame.Color(0,0,0)
 FONT_COLOR = pygame.Color(255,0,0)
 TANK_SPEED = 3
+ENEMY_TANK_COUNT = 4
 
 class MainGame():
     window = None
     myTank = None
+    enemyTanksList = []
 
     def __init__(self):
         pass
@@ -27,6 +29,8 @@ class MainGame():
         pygame.display.set_caption("TankWar")
         # init my tank
         MainGame.myTank = MyTank(350, 250)
+        # init enemy tanks
+        self.initEnemyTanks()
         # show the window
         while True:
             # set the update time
@@ -37,6 +41,7 @@ class MainGame():
             MainGame.window.blit(self.getFontSurface("Remain Enemies:{0}".format(6)), (10,10))
             # display the tank
             MainGame.myTank.displayTank()
+            self.displayEnemyTank()
             # record the events
             self.getEvent()
             # control the movement of my tank
@@ -44,6 +49,19 @@ class MainGame():
                 MainGame.myTank.move()
             # update the screen
             pygame.display.update()
+
+    def displayEnemyTank(self):
+        for enemyTank in MainGame.enemyTanksList:
+            enemyTank.displayTank()
+
+    def initEnemyTanks(self):
+        top = 100
+        # loop to create enemy tanks
+        for i in range(ENEMY_TANK_COUNT):
+            left = random.randint(0, 600)
+            speed = random.randint(1, 4)
+            enemyTank = EnemyTank(top, left, speed)
+            MainGame.enemyTanksList.append(enemyTank)
 
     def quitGame(self):
         print("successful quit!")
@@ -98,12 +116,17 @@ class Tank():
         super().__init__()
         self.direction = 'U'
         self.speed = TANK_SPEED
-
-        self.myTanks = {
+        self.myTanksImgs = {
             'U': pygame.image.load('img/mytankU.gif'),
             'R': pygame.image.load('img/mytankR.gif'),
             'D': pygame.image.load('img/mytankD.gif'),
             'L': pygame.image.load('img/mytankL.gif')
+        }
+        self.enemyTanksImgs = {
+            'U': pygame.image.load('img/enemyU.gif'),
+            'R': pygame.image.load('img/enemyR.gif'),
+            'D': pygame.image.load('img/enemyD.gif'),
+            'L': pygame.image.load('img/enemyL.gif')
         }
 
 class MyTank(Tank):
@@ -111,7 +134,7 @@ class MyTank(Tank):
     def __init__(self, left, top):
         super().__init__()
         # get my tank surface according to the direction
-        self.myTank = self.myTanks.get(self.direction)
+        self.myTank = self.myTanksImgs.get(self.direction)
         # get the rectangle of my tank
         self.myRect = self.myTank.get_rect()
         self.myRect.left = left
@@ -122,7 +145,8 @@ class MyTank(Tank):
     # display the tank in the game window
     def displayTank(self):
         # get my tank surface
-        self.myTank = self.myTanks.get(self.direction)
+        self.myTank = self.myTanksImgs.get(self.direction)
+
         # display it
         MainGame.window.blit(self.myTank, self.myRect)
 
@@ -146,7 +170,32 @@ class MyTank(Tank):
                 self.myRect.top = SCREEN_HEIGHT - self.myRect.height
 
 class EnemyTank(Tank):
-    pass
+    def __init__(self, top, left, speed):
+        super().__init__()
+        self.enemyTank = self.enemyTanksImgs.get(self.direction)
+        self.direction = self.randDirection()
+        self.rect = self.enemyTank.get_rect()
+        self.speed = TANK_SPEED
+        self.rect.left = left
+        self.rect.top = top
+        self.movement = True
+
+    def randDirection(self):
+        num = random.randint(1,4)
+        if num == 1:
+            return 'U'
+        elif num == 2:
+            return 'D'
+        elif num == 3:
+            return 'L'
+        elif num == 4:
+            return 'R'
+
+    def displayTank(self):
+        # get my tank surface
+        self.enemyTank = self.enemyTanksImgs.get(self.direction)
+        # display it
+        MainGame.window.blit(self.enemyTank, self.rect)
 
 class Bullet():
     pass
