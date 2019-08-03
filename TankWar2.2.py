@@ -1,9 +1,10 @@
 '''
-New Function: Enemy tank shoot bullet
+New Function: My bullet hit enemy tank, using Sprite module
 Reference: www.pygame.org
 '''
 
 import pygame, time, random
+from pygame.sprite import Sprite
 
 SCREEN_WIDTH = 700
 SCREEN_HEIGHT = 500
@@ -15,6 +16,11 @@ ENEMY_TANK_COUNT = 4
 ENEMY_TANK_STEP = 50
 BULLET_SPEED = 6
 MAX_BULLET_NUM = 3
+
+class BaseSprite(Sprite):
+    def __init__(self, color, width, height):
+        # Call the parent class (Sprite) constructor
+        pygame.sprite.Sprite.__init__(self)
 
 class MainGame():
     window = None
@@ -75,16 +81,20 @@ class MainGame():
             if bullet.alive:
                 bullet.displayBullet()
                 bullet.move()
+                bullet.hitEnemyTank()
             else:
                 MainGame.myBulletsList.remove(bullet)
 
     def displayEnemyTank(self):
         for enemyTank in MainGame.enemyTanksList:
-            enemyTank.displayTank()
-            enemyTank.randMove()
-            enemyBullet = enemyTank.shoot()
-            if enemyBullet:
-                MainGame.enemyBulletsList.append(enemyBullet)
+            if enemyTank.alive:
+                enemyTank.displayTank()
+                enemyTank.randMove()
+                enemyBullet = enemyTank.shoot()
+                if enemyBullet:
+                    MainGame.enemyBulletsList.append(enemyBullet)
+            else:
+                MainGame.enemyTanksList.remove(enemyTank)
 
     def initEnemyTanks(self):
         top = 100
@@ -151,6 +161,7 @@ class Tank():
         super().__init__()
         self.direction = 'U'
         self.speed = TANK_SPEED
+        self.alive = True
         self.myTanksImgs = {
             'U': pygame.image.load('img/mytankU.gif'),
             'R': pygame.image.load('img/mytankR.gif'),
@@ -263,7 +274,7 @@ class EnemyTank(Tank):
         if random.randint(1,200) < 10:
             return Bullet(self)
 
-class Bullet():
+class Bullet(Sprite):
     def __init__(self, tank):
         self.myBulletImg = pygame.image.load('img/bullet.gif')
         self.rect = self.myBulletImg.get_rect()
@@ -307,6 +318,13 @@ class Bullet():
                 self.rect.left -= self.speed
             else:
                 self.alive = False
+
+    def hitEnemyTank(self):
+        for enemyTank in MainGame.enemyTanksList:
+            if pygame.sprite.collide_rect(self, enemyTank):
+                self.alive = False
+                enemyTank.alive = False
+
 
 class Explode():
     pass
