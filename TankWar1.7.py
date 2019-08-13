@@ -3,7 +3,7 @@ New Function: init enemy tanks and display them
 Reference: www.pygame.org
 '''
 
-import pygame, time, random
+import pygame, time, nprandom
 
 SCREEN_WIDTH = 700
 SCREEN_HEIGHT = 500
@@ -58,8 +58,8 @@ class MainGame():
         top = 100
         # loop to create enemy tanks
         for i in range(ENEMY_TANK_COUNT):
-            left = random.randint(0, 600)
-            speed = random.randint(1, 4)
+            left = nprandom.randint(0, 600)
+            speed = nprandom.randint(1, 4)
             enemyTank = EnemyTank(top, left, speed)
             MainGame.enemyTanksList.append(enemyTank)
 
@@ -181,7 +181,7 @@ class EnemyTank(Tank):
         self.movement = True
 
     def randDirection(self):
-        num = random.randint(1,4)
+        num = nprandom.randint(1, 4)
         if num == 1:
             return 'U'
         elif num == 2:

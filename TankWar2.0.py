@@ -6,7 +6,7 @@ New Function: opimize the function of my bullet:
 Reference: www.pygame.org
 '''
 
-import pygame, time, random
+import pygame, time, nprandom
 
 SCREEN_WIDTH = 700
 SCREEN_HEIGHT = 500
@@ -79,8 +79,8 @@ class MainGame():
         top = 100
         # loop to create enemy tanks
         for i in range(ENEMY_TANK_COUNT):
-            left = random.randint(0, 600)
-            speed = random.randint(1, 4)
+            left = nprandom.randint(0, 600)
+            speed = nprandom.randint(1, 4)
             enemyTank = EnemyTank(top, left, speed)
             MainGame.enemyTanksList.append(enemyTank)
 
@@ -198,7 +198,7 @@ class EnemyTank(Tank):
         self.enemyTank = self.enemyTanksImgs.get(self.direction)
         self.direction = self.randDirection()
         self.rect = self.enemyTank.get_rect()
-        self.speed = ENEMY_TANK_SPEED[random.randint(0,4)]
+        self.speed = ENEMY_TANK_SPEED[nprandom.randint(0, 4)]
         self.rect.left = left
         self.rect.top = top
         self.movement = True
@@ -232,7 +232,7 @@ class EnemyTank(Tank):
                 self.rect.top = SCREEN_HEIGHT - self.rect.height
 
     def randDirection(self):
-        num = random.randint(1,4)
+        num = nprandom.randint(1, 4)
         if num == 1:
             return 'U'
         elif num == 2:

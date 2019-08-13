@@ -6,6 +6,8 @@
     </content>
     <orderEntry type="jdk" jdkName="Python 3.6 (TankWar)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="PyMySQL" />
+    <orderEntry type="module" module-name="Numpy" />
   </component>
   <component name="TestRunnerService">
     <option name="PROJECT_TEST_RUNNER" value="Unittests" />

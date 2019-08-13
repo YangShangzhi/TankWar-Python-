@@ -1,9 +1,10 @@
 '''
-New Function: init enemy tanks and display them
+New Function: Create explode class and display in the window
 Reference: www.pygame.org
 '''
 
 import pygame, time, nprandom
+from pygame.sprite import Sprite
 
 SCREEN_WIDTH = 700
 SCREEN_HEIGHT = 500
@@ -13,11 +14,20 @@ TANK_SPEED = 3
 ENEMY_TANK_SPEED = [1,2,3,4,5]
 ENEMY_TANK_COUNT = 4
 ENEMY_TANK_STEP = 50
+BULLET_SPEED = 6
+MAX_BULLET_NUM = 3
+
+class BaseSprite(Sprite):
+    def __init__(self, color, width, height):
+        # Call the parent class (Sprite) constructor
+        pygame.sprite.Sprite.__init__(self)
 
 class MainGame():
     window = None
     myTank = None
     enemyTanksList = []
+    myBulletsList = []
+    enemyBulletsList = []
 
     def __init__(self):
         pass
@@ -33,6 +43,8 @@ class MainGame():
         MainGame.myTank = MyTank(350, 250)
         # init enemy tanks
         self.initEnemyTanks()
+        # init my bullets has been done in KEY_DOWN
+        # self.initMyBullets()
         # show the window
         while True:
             # set the update time
@@ -44,6 +56,10 @@ class MainGame():
             # display the tank
             MainGame.myTank.displayTank()
             self.displayEnemyTank()
+            # display the my bullets
+            self.displayMyBullets()
+            # display enemy bullets
+            self.displayEnemyBullets()
             # record the events
             self.getEvent()
             # control the movement of my tank
@@ -52,10 +68,33 @@ class MainGame():
             # update the screen
             pygame.display.update()
 
+    def displayEnemyBullets(self):
+        for enemyBullet in MainGame.enemyBulletsList:
+            if enemyBullet.alive:
+                enemyBullet.displayBullet()
+                enemyBullet.move()
+            else:
+                MainGame.enemyBulletsList.remove(enemyBullet)
+
+    def displayMyBullets(self):
+        for bullet in MainGame.myBulletsList:
+            if bullet.alive:
+                bullet.displayBullet()
+                bullet.move()
+                bullet.hitEnemyTank()
+            else:
+                MainGame.myBulletsList.remove(bullet)
+
     def displayEnemyTank(self):
         for enemyTank in MainGame.enemyTanksList:
-            enemyTank.displayTank()
-            enemyTank.randMove()
+            if enemyTank.alive:
+                enemyTank.displayTank()
+                enemyTank.randMove()
+                enemyBullet = enemyTank.shoot()
+                if enemyBullet:
+                    MainGame.enemyBulletsList.append(enemyBullet)
+            else:
+                MainGame.enemyTanksList.remove(enemyTank)
 
     def initEnemyTanks(self):
         top = 100
@@ -109,7 +148,10 @@ class MainGame():
                     # MainGame.myTank.move()
                     MainGame.myTank.movement = True
                 elif event.key == pygame.K_SPACE:
-                    print("shoot!")
+                    # init a bullet while push K_SPACE
+                    if len(MainGame.myBulletsList) < MAX_BULLET_NUM:
+                        myBullet = Bullet(MainGame.myTank)
+                        MainGame.myBulletsList.append(myBullet)
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT or event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                     MainGame.myTank.movement = False
@@ -119,6 +161,7 @@ class Tank():
         super().__init__()
         self.direction = 'U'
         self.speed = TANK_SPEED
+        self.alive = True
         self.myTanksImgs = {
             'U': pygame.image.load('img/mytankU.gif'),
             'R': pygame.image.load('img/mytankR.gif'),
@@ -139,9 +182,9 @@ class MyTank(Tank):
         # get my tank surface according to the direction
         self.myTank = self.myTanksImgs.get(self.direction)
         # get the rectangle of my tank
-        self.myRect = self.myTank.get_rect()
-        self.myRect.left = left
-        self.myRect.top = top
+        self.rect = self.myTank.get_rect()
+        self.rect.left = left
+        self.rect.top = top
         # set a flag to control the continue movement
         self.movement = False
 
@@ -150,26 +193,26 @@ class MyTank(Tank):
         # get my tank surface
         self.myTank = self.myTanksImgs.get(self.direction)
         # display it
-        MainGame.window.blit(self.myTank, self.myRect)
+        MainGame.window.blit(self.myTank, self.rect)
 
     def move(self):
         # judging direction
         if self.direction == "L":
-            self.myRect.left -= self.speed
-            if self.myRect.left <= 0:
-                self.myRect.left = 0
+            self.rect.left -= self.speed
+            if self.rect.left <= 0:
+                self.rect.left = 0
         elif self.direction == "R":
-            self.myRect.left += self.speed
-            if self.myRect.left + self.myRect.height >= SCREEN_WIDTH:
-                self.myRect.left = SCREEN_WIDTH - self.myRect.height
+            self.rect.left += self.speed
+            if self.rect.left + self.rect.height >= SCREEN_WIDTH:
+                self.rect.left = SCREEN_WIDTH - self.rect.height
         elif self.direction == "U":
-            self.myRect.top -= self.speed
-            if self.myRect.top <= 0:
-                self.myRect.top = 0
+            self.rect.top -= self.speed
+            if self.rect.top <= 0:
+                self.rect.top = 0
         elif self.direction == "D":
-            self.myRect.top += self.speed
-            if self.myRect.top + self.myRect.height >= SCREEN_HEIGHT:
-                self.myRect.top = SCREEN_HEIGHT - self.myRect.height
+            self.rect.top += self.speed
+            if self.rect.top + self.rect.height >= SCREEN_HEIGHT:
+                self.rect.top = SCREEN_HEIGHT - self.rect.height
 
 class EnemyTank(Tank):
     def __init__(self, top, left, speed):
@@ -227,8 +270,61 @@ class EnemyTank(Tank):
         # display it
         MainGame.window.blit(self.enemyTank, self.rect)
 
-class Bullet():
-    pass
+    def shoot(self):
+        if nprandom.randint(1, 200) < 10:
+            return Bullet(self)
+
+class Bullet(Sprite):
+    def __init__(self, tank):
+        self.myBulletImg = pygame.image.load('img/bullet.gif')
+        self.rect = self.myBulletImg.get_rect()
+        self.direction = tank.direction
+        self.speed = 6
+        self.alive = True
+        if self.direction == 'U':
+            self.rect.left = tank.rect.left + tank.rect.width / 2 - self.rect.width / 2
+            self.rect.top = tank.rect.top - self.rect.height
+        elif self.direction == 'D':
+            self.rect.left = tank.rect.left + tank.rect.width / 2 - self.rect.width / 2
+            self.rect.top = tank.rect.top + tank.rect.height
+        elif self.direction == 'L':
+            self.rect.left = tank.rect.left - self.rect.width / 2 - self.rect.width / 2
+            self.rect.top = tank.rect.top + tank.rect.width / 2 - self.rect.width / 2
+        elif self.direction == 'R':
+            self.rect.left = tank.rect.left + tank.rect.width
+            self.rect.top = tank.rect.top + tank.rect.width / 2 - self.rect.width / 2
+
+    def displayBullet(self):
+        MainGame.window.blit(self.myBulletImg, self.rect)
+
+    def move(self):
+        if self.direction == 'U':
+            if self.rect.top > 0:
+                self.rect.top -= self.speed
+            else:
+                self.alive = False
+        elif self.direction == 'R':
+            if self.rect.left + self.rect.width < SCREEN_WIDTH:
+                self.rect.left += self.speed
+            else:
+                self.alive = False
+        elif self.direction == 'D':
+            if self.rect.top + self.rect.height < SCREEN_HEIGHT:
+                self.rect.top += self.speed
+            else:
+                self.alive = False
+        elif self.direction == 'L':
+            if self.rect.left > 0:
+                self.rect.left -= self.speed
+            else:
+                self.alive = False
+
+    def hitEnemyTank(self):
+        for enemyTank in MainGame.enemyTanksList:
+            if pygame.sprite.collide_rect(self, enemyTank):
+                self.alive = False
+                enemyTank.alive = False
+
 
 class Explode():
     pass

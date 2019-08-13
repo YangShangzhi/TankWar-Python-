@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/../Numpy/.idea/Numpy.iml" filepath="$PROJECT_DIR$/../Numpy/.idea/Numpy.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../PyMySQL/.idea/PyMySQL.iml" filepath="$PROJECT_DIR$/../PyMySQL/.idea/PyMySQL.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/TankWar.iml" filepath="$PROJECT_DIR$/.idea/TankWar.iml" />
     </modules>
   </component>
